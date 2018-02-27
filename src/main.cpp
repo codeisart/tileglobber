@@ -20,8 +20,10 @@ namespace fs = std::experimental::filesystem;
 
 struct Tile
 {
+	std::string filename;
 };
 
+// ZOOM -> (X,Y) -> (TILE).
 using TileMap = std::map<int, std::map<std::pair<int,int>,Tile>>;
 TileMap gTiles;
 
@@ -40,10 +42,6 @@ bool parse_filename(const fs::directory_entry& in_path, int& out_x, int& out_y, 
 		out_x 		= stoi(sm[2]);
 		out_y 		= stoi(sm[3]);
 
-		//for(int i=0; i < sm.size(); i++)
-		//	cout << i << " " << sm[i] << endl;
-
-		// succes.
 		return true;
 	}
 
@@ -61,8 +59,15 @@ void discover_files(const std::string& tilesetPath)
 		{
 			int x,y,zoom;
 			parse_filename(p,x,y,zoom);
-			cout << "filename=" << p << ", zoom=" << zoom << ", x=" << x << ", y=" << x << endl;
+			gTiles[zoom][{x,y}] = Tile { fs::path(p).filename() };
+
 		}		 
+	}
+
+	cout << "discovered:" << endl;	
+	for(auto& i : gTiles)
+	{
+		cout << "zoom: "  << i.first << ", tiles: " << i.second.size() << endl;
 	}
 }
 

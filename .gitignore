@@ -3,3 +3,10 @@ globber
 *.swp
 *.cache
 *~
+*Makefile
+config.h
+config.log
+config.status
+.deps
+*.o
+stamp-h1
