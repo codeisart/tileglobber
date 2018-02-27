@@ -18,6 +18,12 @@ namespace fs = std::experimental::filesystem;
 // traverse tiles in order and paste contents into main image
 // save map
 
+struct Tile
+{
+};
+
+using TileMap = std::map<int, std::map<std::pair<int,int>,Tile>>;
+TileMap gTiles;
 
 bool parse_filename(const fs::directory_entry& in_path, int& out_x, int& out_y, int& out_zoom)
 {
@@ -55,7 +61,7 @@ void discover_files(const std::string& tilesetPath)
 		{
 			int x,y,zoom;
 			parse_filename(p,x,y,zoom);
-			cout << "filename=" << p << ", zoom=" << zoom << ", x=" << x << ", y=" << y << endl;
+			cout << "filename=" << p << ", zoom=" << zoom << ", x=" << x << ", y=" << x << endl;
 		}		 
 	}
 }
