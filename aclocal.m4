@@ -2131,46 +2131,6 @@ namespace cxx17
 ]])
 
 # =============================================================================
-#  https://www.gnu.org/software/autoconf-archive/ax_cxx_compile_stdcxx_11.html
-# =============================================================================
-#
-# SYNOPSIS
-#
-#   AX_CXX_COMPILE_STDCXX_11([ext|noext], [mandatory|optional])
-#
-# DESCRIPTION
-#
-#   Check for baseline language coverage in the compiler for the C++11
-#   standard; if necessary, add switches to CXX and CXXCPP to enable
-#   support.
-#
-#   This macro is a convenience alias for calling the AX_CXX_COMPILE_STDCXX
-#   macro with the version set to C++11.  The two optional arguments are
-#   forwarded literally as the second and third argument respectively.
-#   Please see the documentation for the AX_CXX_COMPILE_STDCXX macro for
-#   more information.  If you want to use this macro, you also need to
-#   download the ax_cxx_compile_stdcxx.m4 file.
-#
-# LICENSE
-#
-#   Copyright (c) 2008 Benjamin Kosnik <bkoz@redhat.com>
-#   Copyright (c) 2012 Zack Weinberg <zackw@panix.com>
-#   Copyright (c) 2013 Roy Stogner <roystgnr@ices.utexas.edu>
-#   Copyright (c) 2014, 2015 Google Inc.; contributed by Alexey Sokolov <sokolov@google.com>
-#   Copyright (c) 2015 Paul Norman <penorman@mac.com>
-#   Copyright (c) 2015 Moritz Klammler <moritz@klammler.eu>
-#
-#   Copying and distribution of this file, with or without modification, are
-#   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved. This file is offered as-is, without any
-#   warranty.
-
-#serial 18
-
-AX_REQUIRE_DEFINED([AX_CXX_COMPILE_STDCXX])
-AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [AX_CXX_COMPILE_STDCXX([11], [$1], [$2])])
-
-# =============================================================================
 #  https://www.gnu.org/software/autoconf-archive/ax_cxx_compile_stdcxx_17.html
 # =============================================================================
 #
@@ -2205,43 +2165,4 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [AX_CXX_COMPILE_STDCXX([11], [$1], [$2])])
 
 AX_REQUIRE_DEFINED([AX_CXX_COMPILE_STDCXX])
 AC_DEFUN([AX_CXX_COMPILE_STDCXX_17], [AX_CXX_COMPILE_STDCXX([17], [$1], [$2])])
-
-# ====================================================================================
-#  https://www.gnu.org/software/autoconf-archive/ax_cxx_header_tr1_unordered_map.html
-# ====================================================================================
-#
-# SYNOPSIS
-#
-#   AX_CXX_HEADER_TR1_UNORDERED_MAP
-#
-# DESCRIPTION
-#
-#   Check whether the TR1 include <unordered_map> exists and define
-#   HAVE_TR1_UNORDERED_MAP if it does.
-#
-# LICENSE
-#
-#   Copyright (c) 2008 Benjamin Kosnik <bkoz@redhat.com>
-#
-#   Copying and distribution of this file, with or without modification, are
-#   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved. This file is offered as-is, without any
-#   warranty.
-
-#serial 7
-
-AU_ALIAS([AC_CXX_HEADER_TR1_UNORDERED_MAP], [AX_CXX_HEADER_TR1_UNORDERED_MAP])
-AC_DEFUN([AX_CXX_HEADER_TR1_UNORDERED_MAP], [
-  AC_CACHE_CHECK(for tr1/unordered_map,
-  ax_cv_cxx_tr1_unordered_map,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  AC_TRY_COMPILE([#include <tr1/unordered_map>], [using std::tr1::unordered_map;],
-  ax_cv_cxx_tr1_unordered_map=yes, ax_cv_cxx_tr1_unordered_map=no)
-  AC_LANG_RESTORE
-  ])
-  if test "$ax_cv_cxx_tr1_unordered_map" = yes; then
-    AC_DEFINE(HAVE_TR1_UNORDERED_MAP,,[Define if tr1/unordered_map is present. ])
-  fi
-])
 

@@ -5,6 +5,8 @@
 #include <experimental/filesystem>
 #include <regex>
 
+#include "lodepng.h"
+
 namespace fs = std::experimental::filesystem;
 
 // opening:
@@ -18,9 +20,29 @@ namespace fs = std::experimental::filesystem;
 // traverse tiles in order and paste contents into main image
 // save map
 
+struct Png
+{
+	std::vector<uint8_t> pixels;
+	unsigned width = 0;
+       	unsigned height = 0;
+
+	bool load(const std::string filename)
+	{
+		if(auto error = lodepng::decode(pixels, width, height, filename.c_str()))
+		{
+			std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+			return false;
+		}
+		return true;
+	}
+};
+
 struct Tile
 {
-	std::string filename;
+	fs::directory_entry filename;
+	Png image;
+
+	bool load() { return image.load(filename.path().string() ); }
 };
 
 // ZOOM -> (X,Y) -> (TILE).
@@ -59,16 +81,61 @@ void discover_files(const std::string& tilesetPath)
 		{
 			int x,y,zoom;
 			parse_filename(p,x,y,zoom);
-			gTiles[zoom][{x,y}] = Tile { fs::path(p).filename() };
+			gTiles[zoom][{x,y}] = Tile { p };
 
 		}		 
 	}
 
 	cout << "discovered:" << endl;	
-	for(auto& i : gTiles)
+	for(const auto& i : gTiles)
 	{
 		cout << "zoom: "  << i.first << ", tiles: " << i.second.size() << endl;
 	}
+}
+
+bool load_tileset(int zoom)
+{
+	std::cout << "loading zoom " << zoom << " ";
+	auto& zoomset = gTiles[zoom];
+	for(auto& i : zoomset)
+	{
+		Tile& t = i.second;
+		if(!t.load())
+			return false;
+		//std::cout << t.image.width << ", " << t.image.height << std::endl;
+		//std::cout << ".";
+	}
+	std::cout << " done." << std::endl;
+	return true;
+}
+
+void write_merged(int zoom, const std::string& filename)
+{
+	using namespace std;
+	
+	auto& zoomset = gTiles[zoom];
+
+	// calculate extents.
+	int max_x=1;
+       	int max_y=1;
+	for(auto& i : zoomset)
+	{
+		max_x = std::max(i.first.first, max_x);
+		max_y = std::max(i.first.second, max_y);
+	}
+	cout << "tilezet zoom " << zoom << " tile extents are X=" << max_x << ", Y=" << max_y << endl;
+
+	unsigned width = 0;
+	unsigned height = 0;
+	for(int y = 0; y < max_y; ++y)
+	{
+		Tile& t = zoomset[{0,y}];
+		width+=t.image.width;
+		height+=t.image.height;
+	}
+
+	cout << "merged pixel dimentions WIDTH=" << width << ", HEIGHT=" << height << endl;
+
 }
 
 int main(int argc, const char** argv)
@@ -81,11 +148,8 @@ int main(int argc, const char** argv)
 	}		
 
 	discover_files(argv[1]);
-
-	
-
-
-
+	load_tileset(2);		// Supply, or calculate top zoom level.
+	write_merged(2, "output.png");	// Supply, or default.
 
 	// Success.
 	return 0;
