@@ -61,8 +61,8 @@ bool parse_filename(const fs::directory_entry& in_path, int& out_x, int& out_y, 
 	if(sm.size() == 4)
 	{
 		out_zoom 	= stoi(sm[1]);
-		out_x 		= stoi(sm[2]);
-		out_y 		= stoi(sm[3]);
+		out_x 		= stoi(sm[3]);
+		out_y 		= stoi(sm[2]);
 
 		return true;
 	}
@@ -71,7 +71,7 @@ bool parse_filename(const fs::directory_entry& in_path, int& out_x, int& out_y, 
 	return false;
 }
 
-void discover_files(const std::string& tilesetPath)
+void discover_files(const fs::path& tilesetPath)
 {
 	using namespace std;
 	static const string kPng(".png");
@@ -102,14 +102,13 @@ bool load_tileset(int zoom)
 		Tile& t = i.second;
 		if(!t.load())
 			return false;
-		//std::cout << t.image.width << ", " << t.image.height << std::endl;
-		//std::cout << ".";
+		std::cout << ".";
 	}
 	std::cout << " done." << std::endl;
 	return true;
 }
 
-void write_merged(int zoom, const std::string& filename)
+bool write_merged(int zoom, const std::string& filename)
 {
 	using namespace std;
 	
@@ -125,31 +124,103 @@ void write_merged(int zoom, const std::string& filename)
 	}
 	cout << "tilezet zoom " << zoom << " tile extents are X=" << max_x << ", Y=" << max_y << endl;
 
-	unsigned width = 0;
 	unsigned height = 0;
 	for(int y = 0; y < max_y; ++y)
 	{
 		Tile& t = zoomset[{0,y}];
-		width+=t.image.width;
 		height+=t.image.height;
 	}
-
+	
+	unsigned width = 0;
+	for(int x = 0; x < max_x; ++x)
+	{
+		Tile& t = zoomset[{x,0}];
+		width+=t.image.width;
+	}
+	
 	cout << "merged pixel dimentions WIDTH=" << width << ", HEIGHT=" << height << endl;
+	
+	// make new image.
+	std::vector<uint8_t> pixels(width*height*4);
+	uint8_t* p = pixels.data();
 
+	int pix_y = 0;
+	for(int y=0; y<max_y; ++y)
+	{
+		int pix_x = 0;
+		int last_tile_height = 0;
+		for(int x=0; x<max_x; ++x)
+		{
+			Tile& t = zoomset[{x,y}];
+			uint8_t* dst = &p[(pix_y*width*4)+(pix_x*4)];
+			uint8_t* src = t.image.pixels.data();
+
+			// render tile, 1 scanline at a time.
+			for(int v = 0; v < t.image.height; ++v)
+			{
+				memcpy(dst, src, t.image.width*4);
+				dst += width*4;
+				src += t.image.width*4;
+			}
+
+			pix_x+= t.image.width;
+			last_tile_height = t.image.height;
+		}
+		pix_y+= last_tile_height;
+	}
+	
+        cout << "writing " << filename << "... ";	
+	if(auto error = lodepng::encode(filename.c_str(), pixels, width, height))
+	{
+		cout << "encoder error " << error << ": "<< lodepng_error_text(error) << endl;
+		return false;
+	}
+	cout << "done" << endl;
+
+	// success.
+	return true;
 }
 
 int main(int argc, const char** argv)
 {
 	using namespace std;
-	if( argc < 2)
+	if( argc < 3)
 	{
-		cout << "Please supply a folder containing the tile-set" << endl;;
+		cout << "Please supply a folder containing the tile-set and output path." << endl;;
 		return -1;
-	}		
+	}			
+	
+	fs::path inputpath(argv[1]);
+	fs::path outputpath(argv[2]);
 
-	discover_files(argv[1]);
-	load_tileset(2);		// Supply, or calculate top zoom level.
-	write_merged(2, "output.png");	// Supply, or default.
+	if(!is_directory(inputpath))
+	{
+		cout << inputpath << " is not a directory." << endl;
+		return -1;
+	}
+	if(!is_directory(outputpath))
+	{
+		cout << outputpath << " is not a directory." << endl;
+		return -1;
+	}
+
+
+	// find all sets.
+	discover_files(inputpath);
+
+	// process each zoomset.
+	for(auto& i : gTiles)
+	{	
+		int zoom = i.first;	
+		load_tileset(zoom);
+
+		stringstream ss;
+		ss << inputpath.filename().string() << zoom << ".png";
+
+		fs::path tileoutput = outputpath;		
+		tileoutput /= ss.str();
+		write_merged(zoom,  tileoutput);			// Supply, or default.
+	}
 
 	// Success.
 	return 0;
