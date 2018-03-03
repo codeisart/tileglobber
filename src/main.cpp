@@ -192,6 +192,10 @@ int main(int argc, const char** argv)
 	
 	fs::path inputpath(argv[1]);
 	fs::path outputpath(argv[2]);
+	string outputprefix = "tile";
+
+	if( argc >=3 )
+		 outputprefix = argv[3];
 
 	if(!is_directory(inputpath))
 	{
@@ -204,7 +208,6 @@ int main(int argc, const char** argv)
 		return -1;
 	}
 
-
 	// find all sets.
 	discover_files(inputpath);
 
@@ -215,7 +218,7 @@ int main(int argc, const char** argv)
 		load_tileset(zoom);
 
 		stringstream ss;
-		ss << inputpath.filename().string() << zoom << ".png";
+		ss << outputprefix << zoom << ".png";
 
 		fs::path tileoutput = outputpath;		
 		tileoutput /= ss.str();

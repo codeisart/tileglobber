@@ -1,4 +1,5 @@
 tiles
+.DS_Store
 globber
 *.swp
 *.cache

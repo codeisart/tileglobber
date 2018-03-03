@@ -70,7 +70,7 @@ AC_SUBST([AM_LDFLAGS])
 AC_CONFIG_MACRO_DIR([m4])
 
 # check for c++11 and unordered_map
-AX_CXX_COMPILE_STDCXX_17
+AX_CXX_COMPILE_STDCXX_11
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 	Makefile 
