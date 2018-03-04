@@ -3,8 +3,8 @@
 /* Debug Mode */
 #undef DEBUG
 
-/* define if the compiler supports basic C++11 syntax */
-#undef HAVE_CXX11
+/* define if the compiler supports basic C++17 syntax */
+#undef HAVE_CXX17
 
 /* Define to 1 if you have the <exception> header file. */
 #undef HAVE_EXCEPTION

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <experimental/filesystem>
 #include <regex>
+#include <optional>
 
 #include "lodepng.h"
 
@@ -186,16 +187,20 @@ int main(int argc, const char** argv)
 	using namespace std;
 	if( argc < 3)
 	{
-		cout << "Please supply a folder containing the tile-set and output path." << endl;;
+		cout << "Args: InputFolder OutputFolder (output-file-prefix) (zoomset)" << endl;
 		return -1;
 	}			
 	
 	fs::path inputpath(argv[1]);
 	fs::path outputpath(argv[2]);
 	string outputprefix = "tile";
+	std::optional<int> zoomset;
 
 	if( argc >=3 )
 		 outputprefix = argv[3];
+	
+	if( argc >=4 )
+		zoomset = stoi(argv[4]);	
 
 	if(!is_directory(inputpath))
 	{
@@ -215,6 +220,9 @@ int main(int argc, const char** argv)
 	for(auto& i : gTiles)
 	{	
 		int zoom = i.first;	
+		if(zoomset && *zoomset != zoom )
+			continue;
+
 		load_tileset(zoom);
 
 		stringstream ss;
